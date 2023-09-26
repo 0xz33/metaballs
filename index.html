@@ -3,17 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Metaballs and Marching Squares</title>
+    <title>Metaballs</title>
     <style>
-      body {
+      body,
+      html {
         padding: 0;
         margin: 0;
+        overflow: none;
       }
 
-      canvas {
+      #metaballsCanvas {
         width: 100%;
         height: 100%;
-        border: 1px dotted black;
+        border: 1px dotted red;
       }
       #hero {
         width: 100vw;
@@ -21,55 +23,62 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        /* filter: blur(10px); */
       }
     </style>
   </head>
   <body>
-    <section id="hero">
-      <canvas id="metaballCanvas" width="800" height="800"></canvas>
-    </section>
+    <section id="hero"></section>
     <script>
-      const canvas = document.getElementById("metaballCanvas");
+      const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const width = canvas.width;
-      const height = canvas.height;
+      canvas.id = "metaballCanvas";
+      document.getElementById("hero").appendChild(canvas);
+
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
 
       function getRandomFloat(min, max) {
         return Math.random() * (max - min) + min;
       }
 
-      // Define some metaballs
-      const xRange = [80, 120];
-      const yRange = [80, 120];
-      const rRange = [40, 60];
-      const vxRange = [1, 2];
-      const vyRange = [1, 2];
+      function resizeCanvas() {
+        const hero = document.getElementById("hero");
+        const displayWidth = hero.offsetWidth;
+        const displayHeight = hero.offsetHeight;
 
-      const metaballs = Array(8)
+        // // Maintain the aspect ratio of the canvas
+        // if (displayWidth < displayHeight) {
+        //   height = displayWidth;
+        // } else {
+        //   width = displayHeight;
+        // }
+
+        canvas.width = width;
+        canvas.height = height;
+      }
+
+      // Define some metaballs
+      const hero = document.getElementById("hero");
+
+      const xRange = hero.offsetWidth / 2;
+      const yRange = hero.offsetHeight / 2;
+      const rRange = [50, 100];
+      const vxRange = [-2, 2];
+      const vyRange = [-0.5, 0.5];
+
+      const metaballs = Array(33)
         .fill()
         .map(() => ({
-          x: getRandomFloat(...xRange),
-          y: getRandomFloat(...yRange),
+          x: width / 2, // center of the canvas
+          y: height / 2,
           r: getRandomFloat(...rRange),
           vx: getRandomFloat(...vxRange),
           vy: getRandomFloat(...vyRange),
         }));
-
-      // Add more metaballs as needed
-      //   const metaballs = [
-      //     {
-      //       x: 100,
-      //       y: 100,
-      //       r: 50,
-      //       vx: getRandomFloat(1, 2),
-      //       vy: getRandomFloat(1, 2),
-      //     },
-      //     { x: 300, y: 300, r: 60, vx: -1, vy: -1.2 },
-      //     { x: 300, y: 300, r: 20, vx: -1, vy: -1.2 },
-      //     { x: 30, y: 100, r: 10, vx: 1, vy: 1.4 },
-
-      //     // Add more metaballs as needed
-      //   ];
 
       function f(x, y) {
         let sum = 0;
@@ -91,19 +100,35 @@
         }
       }
 
+      //   function draw() {
+      //     ctx.clearRect(0, 0, width, height);
+
+      //     for (let y = 0; y < height; y += 5) {
+      //       for (let x = 0; x < width; x += 5) {
+      //         if (f(x, y) > 1) {
+      //           ctx.fillRect(x, y, 5, 5);
+      //         }
+      //       }
+      //     }
+
+      //     updateMetaballs();
+      //     requestAnimationFrame(draw);
+      //   }
       function draw() {
+        requestAnimationFrame(draw);
         ctx.clearRect(0, 0, width, height);
 
-        for (let y = 0; y < height; y += 5) {
-          for (let x = 0; x < width; x += 5) {
-            if (f(x, y) > 1) {
-              ctx.fillRect(x, y, 5, 5);
+        const stepSize = 5;
+        const threshold = 1;
+        for (let y = 0; y < height; y += stepSize) {
+          for (let x = 0; x < width; x += stepSize) {
+            if (f(x, y) > threshold) {
+              ctx.fillRect(x, y, stepSize, stepSize);
             }
           }
         }
 
         updateMetaballs();
-        requestAnimationFrame(draw);
       }
 
       draw();
